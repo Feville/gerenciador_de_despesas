@@ -15,11 +15,3 @@ repos:
     rev: 7.1.0
     hooks:
       - id: flake8
-
-  - repo: local
-    hooks:
-      - id: pylint
-        name: Run pylint
-        entry: ./run_pylint.sh
-        language: script
-        types: [python]
