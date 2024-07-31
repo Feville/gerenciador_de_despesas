@@ -1,1 +1,1 @@
-"# gerenciador_de_despesas" 
+"# gerenciador_de_despesas"
