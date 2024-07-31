@@ -1,0 +1,26 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0  # Versão dos hooks
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
+  - repo: https://github.com/pre-commit/mirrors-black
+    rev: v23.3.0  # Versão do Black
+    hooks:
+      - id: black
+        language_version: python3.12.4
+
+  - repo: https://github.com/pre-commit/mirrors-flake8
+    rev: v6.2.0  # Versão do Flake8
+    hooks:
+      - id: flake8
+
+   - repo: local
+    rev: v1.0
+    hooks:
+      - id: pylint
+        name: Run pylint
+        entry: ./run_pylint.sh
+        language: script
+        types: [python]

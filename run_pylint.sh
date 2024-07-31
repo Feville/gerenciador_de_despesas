@@ -1,0 +1,1 @@
+pylint $(git diff --cached --name-only --diff-filter=AM | grep '\.py$')
