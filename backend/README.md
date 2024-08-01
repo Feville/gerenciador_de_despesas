@@ -1,6 +1,6 @@
-# Nome do Projeto
+# Finance
 
-Descrição breve sobre o projeto, o que ele faz e seus principais objetivos.
+Parte do backend do Finance e como rodar ele local.
 
 ## Instalação
 
