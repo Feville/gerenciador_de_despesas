@@ -13,7 +13,11 @@ class FinanceController:
 
     def get_user_balance(self, email):
         "Obtém o saldo do usuário"
-        return self._dao.get_balance(email)
+        balance = self._dao.get_balance(email)
+        if balance is None:
+            self._dao.initialize_balance(email)
+            return 0
+        return balance
 
     def add_user_balance(self, email, amount):
         "Adiciona saldo ao usuário"
@@ -25,5 +29,11 @@ class FinanceController:
     def remove_user_balance(self, email, amount):
         "Retira saldo do usuário"
         if amount <= 0:
-            raise ValueError("O valor a ser retirado deve ser positivo")
-        self._dao.remove_balance(email)
+            raise ValueError("O valor a ser retirado deve ser positivo.")
+        current_balance = self.get_user_balance(
+            email
+        )  # Atualiza o saldo antes de remover
+        if current_balance < amount:
+            raise ValueError("Saldo insuficiente.")
+        self._dao.remove_balance(email, amount)
+        return self.get_user_balance(email)
