@@ -1,12 +1,32 @@
-#Instrução pra commits
+# Nome do Projeto
 
-crie um ambiente virtual
-python -m venv venv
+Descrição breve sobre o projeto, o que ele faz e seus principais objetivos.
 
-venv\Scripts\activate
+## Instalação
 
-rode esse comando
-pip install -r requirements.txt
+1. **Crie um ambiente virtual:**
 
-commitar com nota acima de 9.8
-pylint .\backend\ --verbose
+   ```bash
+   python -m venv venv
+
+2. **Ative o ambiente virtual:**
+
+   ```bash
+   python -m venv venv
+
+3. **Instale as dependências:**
+
+   ```bash
+   pip install -r requirements.txt
+
+## Instruções para Commits
+
+Certifique-se de que o código está bem formatado e atende aos critérios de qualidade.
+
+Antes de fazer um commit, execute o linting para garantir a qualidade do código:
+
+4. **Execute este comando antes do commit**
+   ```bash
+   pylint .\backend\ --verbose
+
+Nota: O commit deve ser realizado apenas se a nota do pylint for superior a 9.8.
