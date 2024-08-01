@@ -25,9 +25,10 @@ def alive():
 
 @access_blueprint.route("/register", methods=["POST"])
 def register():
-    "Processa formulário de registro"
-    username = request.form.get("username")
-    email = request.form.get("email")
+    logger.info("Rota que cadastra usuário")
+    data = request.json
+    username = data.get("username")
+    email = data.get("email")
     logger.info("Username: '%s', Email: '%s'", username, email)
     response, status_code = access_controller.create_user(username, email)
 
