@@ -29,7 +29,8 @@ def create_table():
         CREATE TABLE IF NOT EXISTS user (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
-            email TEXT NOT NULL UNIQUE
+            email TEXT NOT NULL UNIQUE,
+            saldo REAL DEFAULT 0
         );
         """
         try:

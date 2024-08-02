@@ -14,7 +14,7 @@ dao = FinanceDB()
 finance_controller = FinanceController(dao)
 
 
-@finance_blueprint.route("/add_cash", methods=["POST"])
+@finance_blueprint.route("/add_user_balance", methods=["POST"])
 def add_cash():
     data = request.json
     email = data.get("email")
@@ -30,4 +30,14 @@ def get_balance():
     email = data.get("email")
 
     response = finance_controller.get_user_balance(email)
+    return jsonify(response)
+
+
+@finance_blueprint.route("/remove_user_balance")
+def remove_user_balance():
+    data = request.json
+    email = data.get("email")
+    amount = data.get("amount")
+
+    response = finance_controller.remove_user_balance(email, amount)
     return jsonify(response)

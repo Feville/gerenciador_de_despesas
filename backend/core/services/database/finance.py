@@ -18,18 +18,30 @@ class FinanceDB:
         "Obtém o saldo do usuário"
         connection = self._create_connection()
         cursor = connection.cursor()
+        cursor.execute("PRAGMA table_info(user);")
+        print(cursor.fetchone(), "resposta aqui")
         cursor.execute("SELECT saldo FROM user WHERE email = ?", (email,))
         result = cursor.fetchone()
         connection.close()
+        print(result, "result")
         return result[0] if result else None
 
-    def add_balance(self, email, amount):
+    def add_balance(self, email, amount, date):
         "Adiciona saldo ao usuário"
         connection = self._create_connection()
         cursor = connection.cursor()
+
+        cursor.execute("PRAGMA table_info(user)")
+        columns = [row[1] for row in cursor.fetchall()]
+
+        if "date" not in columns:
+            cursor.execute("ALTER TABLE user ADD COLUMN date TEXT")
+
         cursor.execute(
-            "UPDATE user SET saldo = saldo + ? WHERE email = ?", (amount, email)
+            "UPDATE user SET saldo = saldo + ?, date = ? WHERE email = ?",
+            (amount, date, email),
         )
+
         connection.commit()
         connection.close()
 
