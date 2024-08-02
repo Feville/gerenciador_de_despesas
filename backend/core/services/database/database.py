@@ -42,3 +42,6 @@ def create_table():
             logger.error("O erro '%s' ocorreu", database_error)
         finally:
             connection.close()
+
+
+create_table()
