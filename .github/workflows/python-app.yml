@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: windows-latest
 
     steps:
@@ -25,6 +24,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}\\backend" >> $env:GITHUB_ENV
+
       - name: Run tests
         run: |
-          pytest
+          pytest backend/test --maxfail=1 --disable-warnings -q

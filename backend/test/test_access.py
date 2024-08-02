@@ -1,13 +1,12 @@
 from unittest.mock import MagicMock
 import pytest
-from api.app import app as flask_app
 from core.services.controllers.access import AccessController
+from .test_config import create_test_app
 
 
 @pytest.fixture
 def app():
-    flask_app.config["TESTING"] = True
-    return flask_app
+    return create_test_app()
 
 
 @pytest.fixture
@@ -43,7 +42,6 @@ def test_register_success(client, mock_access_controller):
 
 def test_register_failure(client, mock_access_controller):
     """Testa a rota /register com dados inválidos"""
-    # Mock para a função create_user
     mock_access_controller.create_user.return_value = {"message": "Invalid data"}, 400
     AccessController.create_user = mock_access_controller.create_user
 
