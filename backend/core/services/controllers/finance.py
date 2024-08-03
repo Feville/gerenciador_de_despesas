@@ -28,16 +28,16 @@ class FinanceController:
             .strftime("%y-%m-%d %H:%M:%S")
         )
         if amount <= 0:
-            raise ValueError("O valor a ser adicionado deve ser positivo.")
+            return {"error": "O valor a ser adicionado deve ser positivo."}, 400
         self._dao.add_balance(email, amount, date)
         return self.get_user_balance(email)
 
     def remove_user_balance(self, email, amount):
         "Retira saldo do usuário"
         if amount <= 0:
-            raise ValueError("O valor a ser retirado deve ser positivo.")
+            return {"error": "O valor a ser retirado deve ser positivo."}, 400
         current_balance = self.get_user_balance(email)
         if current_balance < amount:
-            raise ValueError("Saldo insuficiente.")
+            return {"error": "Saldo insuficiente."}, 400
         self._dao.remove_balance(email, amount)
         return self.get_user_balance(email)

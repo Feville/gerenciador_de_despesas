@@ -19,11 +19,9 @@ class FinanceDB:
         connection = self._create_connection()
         cursor = connection.cursor()
         cursor.execute("PRAGMA table_info(user);")
-        print(cursor.fetchone(), "resposta aqui")
         cursor.execute("SELECT saldo FROM user WHERE email = ?", (email,))
         result = cursor.fetchone()
         connection.close()
-        print(result, "result")
         return result[0] if result else None
 
     def add_balance(self, email, amount, date):
