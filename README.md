@@ -2,6 +2,8 @@
 
 Bem-vindo ao Gerenciador de Despesas! Este projeto permite que você registre e gerencie suas despesas de forma eficiente. A aplicação é composta por uma interface de usuário desenvolvida em React JS e um backend em Python.
 
+<img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm81NDVhYW13Yzl2bmczNHQ0OG44eDQ3dTh1aGRpaXdvZDd2eDRxOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Dg4TxjYikCpiGd7tYs/giphy.gif" alt="Pedro, Pedro, Pedro..." width="200" height="200">
+
 ## Funcionalidades
 
 - **Login de Usuário**: Faça login na plataforma para acessar suas informações de despesas.
