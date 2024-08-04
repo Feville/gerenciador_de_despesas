@@ -22,22 +22,47 @@ def create_connection():
 
 
 def create_table():
-    """Cria uma tabela no banco de dados"""
+    """Cria as tabelas no banco de dados"""
     connection = create_connection()
     if connection:
-        query = """
-        CREATE TABLE IF NOT EXISTS user (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
-            email TEXT NOT NULL UNIQUE,
-            saldo REAL DEFAULT 0
-        );
-        """
         try:
             cursor = connection.cursor()
-            cursor.execute(query)
+
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    email TEXT NOT NULL UNIQUE
+                );
+            """
+            )
+
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS categories (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT UNIQUE NOT NULL
+                );
+            """
+            )
+
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    amount REAL NOT NULL,
+                    category_id INTEGER,
+                    user_id INTEGER,
+                    date DATE NOT NULL,
+                    FOREIGN KEY (category_id) REFERENCES categories (id),
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                );
+            """
+            )
+
             connection.commit()
-            logger.info("Tabela 'user' criada com sucesso")
+            logger.info("Tabelas criadas com sucesso")
         except sqlite3.Error as database_error:
             logger.error("O erro '%s' ocorreu", database_error)
         finally:
