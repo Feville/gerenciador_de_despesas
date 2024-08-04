@@ -1,6 +1,7 @@
 [MASTER]
 # Caminho para o diretório do seu projeto
 init-hook='import sys; sys.path.append("C:/Users/marca/projeto_felipe/gerenciador_de_despesas/backend")'
+ignore=__pycache__,env.sh, test
 
 [MESSAGES CONTROL]
 # Desative mensagens específicas que você não deseja ver
