@@ -1,4 +1,5 @@
 astroid==3.2.4
+bcrypt==4.2.0
 blinker==1.8.2
 cfgv==3.4.0
 click==8.1.7
