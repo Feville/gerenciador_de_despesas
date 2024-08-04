@@ -5,6 +5,7 @@ Módulo principal
 from api.app import app
 import api.router
 from core.logs.logger import setup_logger
+from core.services.database.database import create_table
 
 logger = setup_logger(__name__)
 
@@ -17,4 +18,5 @@ def main():
 
 
 if __name__ == "__main__":
+    create_table()
     main()

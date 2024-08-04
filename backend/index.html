@@ -49,36 +49,39 @@
     <div class="container">
         <h2>Cadastro</h2>
         <form id="registerForm">
-            <input type="text" id="name" placeholder="Nome" required>
+            <input type="text" id="username" placeholder="Nome" required>
             <input type="email" id="email" placeholder="E-mail" required>
             <button type="submit">Cadastrar</button>
         </form>
     </div>
 
     <script>
-        document.getElementById('registerForm').addEventListener('submit', function(event) {
-            event.preventDefault();
+        document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('registerForm').addEventListener('submit', function(event) {
+        event.preventDefault();
 
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
+        const name = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
 
-            fetch('http://127.0.0.1:8000/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name, email })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Cadastro realizado com sucesso!');
-                document.getElementById('registerForm').reset();
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Ocorreu um erro ao realizar o cadastro.');
-            });
+        fetch('http://127.0.0.1:8000/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Cadastro realizado com sucesso!');
+            document.getElementById('registerForm').reset();
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Ocorreu um erro ao realizar o cadastro.');
         });
+    });
+});
+
     </script>
 </body>
 </html>

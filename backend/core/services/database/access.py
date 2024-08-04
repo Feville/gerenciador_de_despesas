@@ -16,7 +16,7 @@ class AccessDB:
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
 
-        cursor.execute("SELECT * FROM user WHERE email = ?", (email,))
+        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -24,7 +24,7 @@ class AccessDB:
             return False
 
         cursor.execute(
-            "INSERT INTO user (username, email) VALUES (?, ?)",
+            "INSERT INTO users (username, email) VALUES (?, ?)",
             (username, email),
         )
         connection.commit()
@@ -37,7 +37,7 @@ class AccessDB:
         cursor = connection.cursor()
 
         cursor.execute(
-            "SELECT * FROM user WHERE username = ? AND email = ?",
+            "SELECT * FROM users WHERE username = ? AND email = ?",
             (username, email),
         )
         user = cursor.fetchone()
