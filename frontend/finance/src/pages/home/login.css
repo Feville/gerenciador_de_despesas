@@ -1,0 +1,58 @@
+.container{
+    width: 450px;
+    height: 35vh;
+    background-color:rgba(255,255,255,0.13);
+    backdrop-filter: blur(5px);
+    border-radius: 15px;
+    align-content: center;
+    padding: 20px 20px;
+}
+  
+.container h1{
+    text-align: center;
+    font-size: 35px;
+    color: white;
+}
+
+.form{
+    margin: 30px;
+    height: 45px;
+    position: relative;
+}
+
+
+.form input{
+    outline: none;
+    width: 100%;
+    height: 100%;
+    padding: 20px 40px;
+    border: 1px solid rgb(255, 255, 255);
+    border-radius: 30px;
+    background-color: rgba(0, 0, 0, 0.582);
+    color: rgb(206, 206, 206);
+    font-size: 16px;
+}
+  
+.form .icon{
+   position: absolute;
+   left: 15px;
+   top: 50% ;
+   transform: translateY(-50%);
+   color: white;
+}
+
+.form input::placeholder{
+    color: rgb(206, 206, 206);
+}
+
+.recall_forget a{
+    color:rgb(206, 206, 206);
+    text-decoration: none;
+}
+.recall_forget a:hover{
+    color:white;
+}
+
+.form button{
+    color: red;
+}

@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { FaUser, FaRegAddressCard } from "react-icons/fa"
+import "./login.css"
 
-const login = () => {
+const Login = () => {
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   
@@ -53,4 +54,4 @@ const login = () => {
   )
 }
 
-export default login
+export default Login
