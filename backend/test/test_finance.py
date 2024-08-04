@@ -56,3 +56,14 @@ def test_get_user_balance_success(test_client, mock_finance_controller):
 
     assert response.status_code == 200
     assert response.get_json() == {"balance": expected_balance}
+
+
+def teste_get_balance_by_date(test_client):
+    email = "teste@email.com"
+    date = "2024-08"
+    response = test_client.get(
+        "/get_balance_by_date",
+        query_string={"email": email, "date": date},
+    )
+    assert response.status_code == 200
+    assert response.get_json() == {"balance": 0.0}
