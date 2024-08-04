@@ -31,14 +31,14 @@ class AccessDB:
         connection.close()
         return True
 
-    def check_login(self, username, email):
+    def login(self, email):
         "Verifica se o login da pessoa existe no banco"
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
 
         cursor.execute(
-            "SELECT * FROM users WHERE username = ? AND email = ?",
-            (username, email),
+            "SELECT * FROM users WHERE email = ?",
+            (email,),
         )
         user = cursor.fetchone()
         connection.close()

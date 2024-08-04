@@ -35,3 +35,13 @@ def register():
     if status_code == 201:
         return jsonify(response), 200
     return jsonify(response), 400
+
+
+@access_blueprint.route("/login", methods=["POST"])
+def login():
+    logger.info("Rota que faz o login dos usuários")
+    data = request.json
+    email = data.get("email")
+
+    response = access_controller.login(email)
+    return response

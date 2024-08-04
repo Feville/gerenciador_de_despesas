@@ -17,3 +17,10 @@ class AccessController:
         if is_register_successfull:
             return {"msg": "Usuário registrado", "user": username}, 201
         return {"msg": "Problema ao registrar usuário"}, 400
+
+    def login(self, email):
+        "Verifica o login do usuário"
+        login_successfull = self._dao.login(email)
+        if login_successfull:
+            return {"msg": "Usuário logado", "email": email}, 200
+        return {"msg": "Problema ao logar usuário"}, 400
