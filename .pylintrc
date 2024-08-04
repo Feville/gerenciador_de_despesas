@@ -1,17 +1,14 @@
 [MASTER]
-# Caminho para o diretório do seu projeto
 init-hook='import sys; sys.path.append("C:/Users/marca/projeto_felipe/gerenciador_de_despesas/backend")'
 ignore=__pycache__,env.sh, test
 
 [MESSAGES CONTROL]
-# Desative mensagens específicas que você não deseja ver
 disable=
-    C0103, # Nome da variável não padrão
-    C0111, # Documentação não encontrada
+    C0103,
+    C0111,
 
 [FORMAT]
-max-line-length=100 # Ajuste o comprimento máximo da linha
+max-line-length=100
 
 [IMPORTS]
-# Configure caminhos adicionais para importações
 init-hook='import sys; sys.path.append("C:/Users/marca/projeto_felipe/gerenciador_de_despesas/backend")'
