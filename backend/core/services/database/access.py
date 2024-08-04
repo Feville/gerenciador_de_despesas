@@ -1,5 +1,5 @@
 """
-Módulo que gerencia o usuário no banco de dados
+Módulo que gerencia os acessos dos usuários
 """
 
 import sqlite3
@@ -11,7 +11,7 @@ class AccessDB:
     def __init__(self, db_path="database.db"):
         self.db_path = db_path
 
-    def create_user(self, username, email):
+    def create_user(self, username, email, hashed_password):
         "Adiciona um usuário novo no banco"
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
@@ -24,22 +24,22 @@ class AccessDB:
             return False
 
         cursor.execute(
-            "INSERT INTO users (username, email) VALUES (?, ?)",
-            (username, email),
+            "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+            (username, email, hashed_password),
         )
         connection.commit()
         connection.close()
         return True
 
-    def login(self, email):
-        "Verifica se o login da pessoa existe no banco"
+    def get_user_by_email(self, email):
+        "Recupera o usuário pelo email"
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
 
-        cursor.execute(
-            "SELECT * FROM users WHERE email = ?",
-            (email,),
-        )
-        user = cursor.fetchone()
+        cursor.execute("SELECT password FROM users WHERE email = ?", (email,))
+        result = cursor.fetchone()
+
         connection.close()
-        return user
+        if result:
+            return {"password": result[0]}
+        return None

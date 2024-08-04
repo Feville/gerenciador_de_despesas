@@ -29,8 +29,8 @@ def register():
     data = request.json
     username = data.get("username")
     email = data.get("email")
-    logger.info("Username: '%s', Email: '%s'", username, email)
-    response, status_code = access_controller.create_user(username, email)
+    password = data.get("password")
+    response, status_code = access_controller.create_user(username, email, password)
 
     if status_code == 201:
         return jsonify(response), 200
@@ -42,6 +42,7 @@ def login():
     logger.info("Rota que faz o login dos usuários")
     data = request.json
     email = data.get("email")
+    password = data.get("password")
 
-    response = access_controller.login(email)
+    response = access_controller.login(email, password)
     return response
