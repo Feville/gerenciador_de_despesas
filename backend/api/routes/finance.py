@@ -24,6 +24,17 @@ def get_balance():
     return response
 
 
+@finance_blueprint.route("/get_balance_by_date", methods=["GET"])
+def get_balance_by_date():
+    logger.info("Rota que mostra o saldo do usuário pela data")
+    data = request.args
+    email = data.get("email")
+    date = data.get("date")
+
+    response = finance_controller.get_balance_by_date(email, date)
+    return response
+
+
 @finance_blueprint.route("/add_user_balance", methods=["POST"])
 def add_user_balance():
     logger.info("Rota que adiciona saldo e categoria do gasto do usuário")
