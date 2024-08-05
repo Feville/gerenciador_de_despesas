@@ -62,6 +62,20 @@ def create_table():
             """
             )
 
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS loans (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    amount REAL NOT NULL,
+                    category_id INTEGER,
+                    user_id INTEGER,
+                    date DATE NOT NULL,
+                    FOREIGN KEY (category_id) REFERENCES categories (id),
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                );
+            """
+            )
+
             connection.commit()
             logger.info("Tabelas criadas com sucesso")
         except sqlite3.Error as database_error:

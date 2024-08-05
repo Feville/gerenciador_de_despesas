@@ -54,3 +54,23 @@ class FinanceController:
         "Lista os gastos do usuário"
         response = self._dao.get_balance_history(email)
         return response
+
+    def add_loan(self, amount, category_name, email):
+        "Adiciona empréstimo"
+        date = (
+            datetime.now()
+            .astimezone(timezone("America/Sao_Paulo"))
+            .strftime("%y-%m-%d %H:%M:%S")
+        )
+        if amount <= 0:
+            return (
+                jsonify({"error": "O valor a ser adicionado deve ser positivo."}),
+                400,
+            )
+        response = self._dao.add_loan(amount, category_name, email, date)
+        return response
+
+    def get_loan_history(self, email):
+        "Histórico de empréstimo"
+        response = self._dao.get_loan_history(email)
+        return response

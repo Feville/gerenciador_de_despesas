@@ -66,3 +66,24 @@ def get_balance_history():
 
     response = finance_controller.get_balance_history(email)
     return response
+
+
+@finance_blueprint.route("/add_loan", methods=["POST"])
+def add_loan():
+    logger.info("Rota que adiciona empréstimo")
+    data = request.json
+    email = data.get("email")
+    amount = data.get("amount")
+    category_name = data.get("category_name")
+
+    response = finance_controller.add_loan(amount, category_name, email)
+    return response
+
+
+@finance_blueprint.route("/get_loan_history", methods=["GET"])
+def get_loan_history():
+    logger.info("Rota que mostra o histórico de empréstimos")
+    data = request.args
+    email = data.get("email")
+    response = finance_controller.get_loan_history(email)
+    return response
