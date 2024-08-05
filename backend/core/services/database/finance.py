@@ -106,3 +106,30 @@ class FinanceDB:
         conn.commit()
 
         return jsonify({"msg": "Categoria criada com sucesso"}), 201
+
+    def get_balance_history(self, email):
+        user_id = self.get_user_id_by_email(email)
+        if user_id is None:
+            return jsonify({"msg": "Usuário não encontrado"}), 400
+
+        conn = self._create_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT e.id, e.amount, c.name as category, e.date
+            FROM expenses e
+            JOIN categories c ON e.category_id = c.id
+            WHERE e.user_id = ?
+            ORDER BY e.date DESC
+            """,
+            (user_id,),
+        )
+        expenses = cursor.fetchall()
+        conn.close()
+
+        expense_list = [
+            {"id": exp[0], "amount": exp[1], "category": exp[2], "date": exp[3]}
+            for exp in expenses
+        ]
+
+        return jsonify({"expenses": expense_list}), 200

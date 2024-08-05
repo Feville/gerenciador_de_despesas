@@ -56,3 +56,13 @@ def create_category():
 
     response = finance_controller.create_category(email, category_name)
     return response
+
+
+@finance_blueprint.route("/get_balance_history", methods=["GET"])
+def get_balance_history():
+    logger.info("Rota que lista os gastos do usuário")
+    data = request.args
+    email = data.get("email")
+
+    response = finance_controller.get_balance_history(email)
+    return response

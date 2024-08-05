@@ -49,3 +49,8 @@ class FinanceController:
             return jsonify({"msg": "category_name e email são obrigatórios"}), 400
         response = self._dao.create_category(category_name, email)
         return response
+
+    def get_balance_history(self, email):
+        "Lista os gastos do usuário"
+        response = self._dao.get_balance_history(email)
+        return response
