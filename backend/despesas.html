@@ -70,11 +70,27 @@
             <button onclick="getBalanceHistory()">Ver Histórico de Gastos</button>
             <div id="historyResult"></div>
         </div>
+
+        <!-- Adicionar Empréstimo -->
+        <div class="form-group">
+            <label for="loanCategory">Categoria:</label>
+            <input type="text" id="loanCategory" placeholder="Nome da Categoria">
+            <label for="loanAmount">Valor:</label>
+            <input type="number" id="loanAmount" placeholder="Valor">
+            <button onclick="addLoan()">Adicionar Empréstimo</button>
+            <p id="loanResult"></p>
+        </div>
+
+        <!-- Histórico de Empréstimos -->
+        <div class="form-group history">
+            <button onclick="getLoanHistory()">Ver Histórico de Empréstimos</button>
+            <div id="loansResult"></div>
+        </div>
     </div>
 
     <script>
         const apiBaseURL = 'http://127.0.0.1:8000/';
-        const userEmail = 'teste@email.com';
+        const userEmail = 'teste@email.com'; // Substitua pelo e-mail do usuário autenticado
 
         async function checkBalance() {
             try {
@@ -147,9 +163,9 @@
                 const data = await response.json();
                 if (response.ok) {
                     const expenses = data.expenses;
-                    let html = '<table><thead><tr><th>Data</th><th>Categoria</th><th>Valor</th></tr></thead><tbody>';
+                    let html = '<table><thead><tr><th>Categoria</th><th>Valor</th><th>Data</th></tr></thead><tbody>';
                     expenses.forEach(item => {
-                        html += `<tr><td>${item.date}</td><td>${item.category}</td><td>R$ ${item.amount}</td></tr>`;
+                        html += `<tr><td>${item.category}</td><td>${item.amount}</td><td>R$ ${item.date}</td></tr>`;
                     });
                     html += '</tbody></table>';
                     document.getElementById('historyResult').innerHTML = html;
@@ -158,6 +174,53 @@
                 }
             } catch (error) {
                 console.error('Erro ao buscar histórico de gastos:', error);
+            }
+        }
+
+        async function addLoan() {
+            const categoryName = document.getElementById('loanCategory').value;
+            const amount = document.getElementById('loanAmount').value;
+            if (!categoryName || !amount) {
+                document.getElementById('loanResult').innerText = 'Por favor, insira a categoria e o valor.';
+                return;
+            }
+            try {
+                const response = await fetch(`${apiBaseURL}/add_loan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: userEmail, amount: parseFloat(amount), category_name: categoryName })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('loanResult').innerText = `Empréstimo adicionado: R$ ${data.amount} na categoria ${data.category_name}`;
+                    document.getElementById('loansResult').innerHTML = ''; // Limpar histórico anterior
+                } else {
+                    document.getElementById('loanResult').innerText = `Erro: ${data.message}`;
+                }
+            } catch (error) {
+                console.error('Erro ao adicionar empréstimo:', error);
+            }
+        }
+
+        async function getLoanHistory() {
+            try {
+                const response = await fetch(`${apiBaseURL}/get_loan_history?email=${encodeURIComponent(userEmail)}`);
+                const data = await response.json();
+                if (response.ok) {
+                    const loans = data.loans;
+                    let html = '<table><thead><tr><th>Categoria</th><th>Valor</th><th>Data</th></tr></thead><tbody>';
+                    loans.forEach(loan => {
+                        html += `<tr><td>${loan.category}</td><td>R$ ${loan.amount}</td><td>${loan.date}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                    document.getElementById('loansResult').innerHTML = html;
+                } else {
+                    document.getElementById('loansResult').innerText = `Erro: ${data.message}`;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar histórico de empréstimos:', error);
             }
         }
     </script>
