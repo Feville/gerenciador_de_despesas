@@ -76,7 +76,7 @@ def add_loan():
     amount = data.get("amount")
     category_name = data.get("category_name")
 
-    response = finance_controller.add_loan(amount, category_name, email)
+    response = finance_controller.add_loan(email, amount, category_name)
     return response
 
 

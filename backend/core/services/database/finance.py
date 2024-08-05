@@ -3,6 +3,7 @@ Módulo que gerencia o banco de dados de finanças
 """
 
 import sqlite3
+from typing import Optional, Tuple
 from flask import jsonify
 from core.logs.logger import setup_logger
 
@@ -12,13 +13,13 @@ logger = setup_logger(__name__)
 class FinanceDB:
     "Gerencia as finanças no banco de dados"
 
-    def __init__(self, db_path="database.db"):
+    def __init__(self, db_path: str = "database.db") -> None:
         self.db_path = db_path
 
-    def _create_connection(self):
+    def _create_connection(self) -> sqlite3.Connection:
         return sqlite3.connect(self.db_path)
 
-    def get_user_id_by_email(self, email):
+    def get_user_id_by_email(self, email: str) -> Optional[int]:
         conn = self._create_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
@@ -28,7 +29,7 @@ class FinanceDB:
             return user_id_row[0]
         return None
 
-    def get_balance(self, email):
+    def get_balance(self, email: str) -> Tuple[jsonify, int]:
         user_id = self.get_user_id_by_email(email)
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
@@ -44,19 +45,17 @@ class FinanceDB:
             200,
         )
 
-    def get_balance_by_date(self, email, year, month):
+    def get_balance_by_date(
+        self, email: str, year: str, month: str
+    ) -> Tuple[jsonify, int]:
         user_id = self.get_user_id_by_email(email)
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
         conn = self._create_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT SUM(AMOUNT) FROM expenses WHERE user_id = ? AND strftime('%Y', date) = ? AND strftime('%m', date) = ?",
-            (
-                user_id,
-                year,
-                month,
-            ),
+            "SELECT SUM(amount) FROM expenses WHERE user_id = ? AND strftime('%Y', date) = ? AND strftime('%m', date) = ?",
+            (user_id, year, month),
         )
         total_amount = cursor.fetchone()[0]
         conn.close()
@@ -66,7 +65,9 @@ class FinanceDB:
             200,
         )
 
-    def add_user_balance(self, amount, category_name, email, date):
+    def add_user_balance(
+        self, amount: float, category_name: str, email: str, date: str
+    ) -> Tuple[jsonify, int]:
         conn = self._create_connection()
         cursor = conn.cursor()
 
@@ -90,7 +91,7 @@ class FinanceDB:
         conn.close()
         return jsonify({"msg": "Despesa adicionada com sucesso"}), 201
 
-    def create_category(self, category_name, email):
+    def create_category(self, category_name: str, email: str) -> Tuple[jsonify, int]:
         conn = self._create_connection()
         cursor = conn.cursor()
 
@@ -107,7 +108,9 @@ class FinanceDB:
 
         return jsonify({"msg": "Categoria criada com sucesso"}), 201
 
-    def add_loan(self, amount, category_name, email, date):
+    def add_loan(
+        self, amount: float, category_name: str, email: str, date: str
+    ) -> Tuple[jsonify, int]:
         conn = self._create_connection()
         cursor = conn.cursor()
 
@@ -131,7 +134,7 @@ class FinanceDB:
         conn.close()
         return jsonify({"msg": "Empréstimo adicionado com sucesso"}), 201
 
-    def get_balance_history(self, email):
+    def get_balance_history(self, email: str) -> Tuple[jsonify, int]:
         user_id = self.get_user_id_by_email(email)
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
@@ -158,7 +161,7 @@ class FinanceDB:
 
         return jsonify({"expenses": expense_list}), 200
 
-    def get_loan_history(self, email):
+    def get_loan_history(self, email: str) -> Tuple[jsonify, int]:
         user_id = self.get_user_id_by_email(email)
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
