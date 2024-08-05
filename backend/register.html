@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Cadastro</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,8 +19,6 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
         }
         .container h2 {
             margin-bottom: 20px;
@@ -35,7 +33,7 @@
         .container button {
             width: 100%;
             padding: 10px;
-            background-color: #007bff;
+            background-color: #28a745;
             border: none;
             color: white;
             font-size: 16px;
@@ -43,52 +41,45 @@
             cursor: pointer;
         }
         .container button:hover {
-            background-color: #0056b3;
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Login</h2>
-        <form id="loginForm">
+        <h2>Cadastro</h2>
+        <form id="registerForm">
+            <input type="text" id="username" placeholder="Nome" required>
             <input type="email" id="email" placeholder="E-mail" required>
             <input type="password" id="password" placeholder="Senha" required>
-            <button type="submit">Entrar</button>
+            <button type="submit">Cadastrar</button>
         </form>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('loginForm').addEventListener('submit', function(event) {
+            document.getElementById('registerForm').addEventListener('submit', function(event) {
                 event.preventDefault();
 
+                const username = document.getElementById('username').value;
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
 
-                fetch('http://127.0.0.1:8000/login', {
+                fetch('http://127.0.0.1:8000/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    mode: 'cors',
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, email, password })
                 })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        return response.json().then(errorData => {
-                            throw new Error(errorData.message || 'E-mail ou senha inválidos.');
-                        });
-                    }
-                })
+                .then(response => response.json())
                 .then(data => {
-                    alert('Login realizado com sucesso!');
+                    alert('Cadastro realizado com sucesso!');
                     window.location.href = 'despesas.html';
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    alert(error.message || 'Ocorreu um erro ao realizar o login.');
+                    alert('Ocorreu um erro ao realizar o cadastro.');
                 });
             });
         });
