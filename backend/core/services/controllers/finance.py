@@ -86,7 +86,7 @@ class FinanceController:
             return jsonify({"msg": "Usuário não encontrado"}), 400
         expense_list = self._dao.get_balance_history(user_id)
         return jsonify({"expenses": expense_list}), 200
-        
+
     def add_loan(
         self, email: str, amount: float, category_name: str
     ) -> Tuple[Response, int]:

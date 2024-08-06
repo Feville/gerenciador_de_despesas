@@ -57,7 +57,7 @@ class FinanceDB:
         cursor = conn.cursor()
         cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,))
         if cursor.fetchone() is not None:
-            return False 
+            return False
         category_id_row = cursor.fetchone()
         category_id = category_id_row[0]
         cursor.execute(
@@ -74,7 +74,7 @@ class FinanceDB:
 
         cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,))
         if cursor.fetchone() is not None:
-            return False 
+            return False
         cursor.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
         conn.commit()
         return True
