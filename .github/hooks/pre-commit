@@ -1,0 +1,1 @@
+exec pre-commit run --hook-type pre-commit "$@"
