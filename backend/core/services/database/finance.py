@@ -3,7 +3,7 @@ Módulo que gerencia o banco de dados de finanças
 """
 
 import sqlite3
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List, Dict
 from flask import jsonify
 from core.logs.logger import setup_logger
 
@@ -29,28 +29,17 @@ class FinanceDB:
             return user_id_row[0]
         return None
 
-    def get_balance(self, email: str) -> Tuple[jsonify, int]:
-        user_id = self.get_user_id_by_email(email)
-        if user_id is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
-
+    def get_user_balance(self, user_id: int) -> Optional[float]:
         conn = self._create_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT SUM(amount) FROM expenses WHERE user_id = ?", (user_id,))
         total_amount = cursor.fetchone()[0]
         conn.close()
-
-        return (
-            jsonify({"balance": total_amount if total_amount is not None else 0}),
-            200,
-        )
+        return total_amount
 
     def get_balance_by_date(
-        self, email: str, year: str, month: str
-    ) -> Tuple[jsonify, int]:
-        user_id = self.get_user_id_by_email(email)
-        if user_id is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
+        self, user_id: int, year: str, month: str
+    ) -> Optional[float]:
         conn = self._create_connection()
         cursor = conn.cursor()
         cursor.execute(
@@ -59,71 +48,46 @@ class FinanceDB:
         )
         total_amount = cursor.fetchone()[0]
         conn.close()
-
-        return (
-            jsonify({"balance": total_amount if total_amount is not None else 0}),
-            200,
-        )
+        return total_amount
 
     def add_user_balance(
-        self, amount: float, category_name: str, email: str, date: str
-    ) -> Tuple[jsonify, int]:
+        self, amount: float, category_name: str, user_id: int, date: str
+    ) -> Optional[bool]:
         conn = self._create_connection()
         cursor = conn.cursor()
-
-        cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
-        user_id_row = cursor.fetchone()
-        if user_id_row is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
-        user_id = user_id_row[0]
-
         cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,))
+        if cursor.fetchone() is not None:
+            return False 
         category_id_row = cursor.fetchone()
-        if category_id_row is None:
-            return jsonify({"msg": "Categoria não encontrada"}), 400
         category_id = category_id_row[0]
-
         cursor.execute(
             "INSERT INTO expenses (amount, category_id, user_id, date) VALUES (?, ?, ?, ?)",
             (amount, category_id, user_id, date),
         )
         conn.commit()
         conn.close()
-        return jsonify({"msg": "Despesa adicionada com sucesso"}), 201
+        return True
 
-    def create_category(self, category_name: str, email: str) -> Tuple[jsonify, int]:
+    def create_category(self, category_name: str) -> Optional[bool]:
         conn = self._create_connection()
         cursor = conn.cursor()
-
-        user_id = self.get_user_id_by_email(email)
-        if user_id is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
 
         cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,))
         if cursor.fetchone() is not None:
-            return jsonify({"msg": "Categoria já existe"}), 400
-
+            return False 
         cursor.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
         conn.commit()
-
-        return jsonify({"msg": "Categoria criada com sucesso"}), 201
+        return True
 
     def add_loan(
-        self, amount: float, category_name: str, email: str, date: str
-    ) -> Tuple[jsonify, int]:
+        self, amount: float, category_name: str, user_id: str, date: str
+    ) -> bool:
         conn = self._create_connection()
         cursor = conn.cursor()
-
-        cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
-        user_id_row = cursor.fetchone()
-        if user_id_row is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
-        user_id = user_id_row[0]
-
         cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,))
         category_id_row = cursor.fetchone()
         if category_id_row is None:
-            return jsonify({"msg": "Categoria não encontrada"}), 400
+            return False
         category_id = category_id_row[0]
 
         cursor.execute(
@@ -132,13 +96,9 @@ class FinanceDB:
         )
         conn.commit()
         conn.close()
-        return jsonify({"msg": "Empréstimo adicionado com sucesso"}), 201
+        return True
 
-    def get_balance_history(self, email: str) -> Tuple[jsonify, int]:
-        user_id = self.get_user_id_by_email(email)
-        if user_id is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
-
+    def get_balance_history(self, user_id: int) -> List[Dict[str, any]]:
         conn = self._create_connection()
         cursor = conn.cursor()
         cursor.execute(
@@ -159,13 +119,9 @@ class FinanceDB:
             for exp in expenses
         ]
 
-        return jsonify({"expenses": expense_list}), 200
+        return expense_list
 
-    def get_loan_history(self, email: str) -> Tuple[jsonify, int]:
-        user_id = self.get_user_id_by_email(email)
-        if user_id is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
-
+    def get_loan_history(self, user_id: int) -> List[Dict[str, any]]:
         conn = self._create_connection()
         cursor = conn.cursor()
         cursor.execute(
@@ -186,4 +142,4 @@ class FinanceDB:
             for loan in loans
         ]
 
-        return jsonify({"loans": loan_list}), 200
+        return loan_list
