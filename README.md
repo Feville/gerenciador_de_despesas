@@ -17,10 +17,6 @@ Bem-vindo ao Gerenciador de Despesas! Este projeto permite que você registre e 
 - **Backend**: Python (Flask)
 - **Banco de Dados**: SQLite
 
-## Instalação e Configuração
+## Instruções de Configuração
 
-### Backend
-
-1. **Clone o repositório**:
-   ```bash
-   git clone https://github.com/seu_usuario/seu_repositorio_backend.git
+As instruções específicas para configurar e executar o projeto estão localizadas dentro das pastas `frontend` e `backend`. Por favor, consulte os arquivos `README.md` em cada uma dessas pastas para obter detalhes completos sobre a configuração e execução de cada parte da aplicação.
