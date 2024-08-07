@@ -3,8 +3,8 @@ Módulo que controla as finanças
 """
 
 from datetime import datetime
-from typing import Tuple
-from flask import Response, jsonify, Optional
+from typing import Tuple, Optional
+from flask import Response, jsonify
 from pytz import timezone
 from core.services.database.finance import FinanceDB
 
