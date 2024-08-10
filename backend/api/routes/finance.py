@@ -20,8 +20,8 @@ def get_balance():
     data = request.args
     email = data.get("email")
 
-    response = finance_controller.get_user_balance(email)
-    return response
+    response, status_code = finance_controller.get_user_balance(email)
+    return response, status_code
 
 
 @finance_blueprint.route("/get_balance_by_date", methods=["GET"])
@@ -31,8 +31,8 @@ def get_balance_by_date():
     email = data.get("email")
     date = data.get("date")
 
-    response = finance_controller.get_balance_by_date(email, date)
-    return response
+    response, status_code = finance_controller.get_balance_by_date(email, date)
+    return response, status_code
 
 
 @finance_blueprint.route("/add_user_balance", methods=["POST"])
@@ -43,8 +43,10 @@ def add_user_balance():
     amount = data.get("amount")
     category_name = data.get("category_name")
 
-    response = finance_controller.add_user_balance(email, amount, category_name)
-    return response
+    response, status_code = finance_controller.add_user_balance(
+        email, amount, category_name
+    )
+    return response, status_code
 
 
 @finance_blueprint.route("/create_category", methods=["POST"])
@@ -54,8 +56,8 @@ def create_category():
     email = data.get("email")
     category_name = data.get("category_name")
 
-    response = finance_controller.create_category(email, category_name)
-    return response
+    response, status_code = finance_controller.create_category(email, category_name)
+    return response, status_code
 
 
 @finance_blueprint.route("/get_balance_history", methods=["GET"])
@@ -64,8 +66,8 @@ def get_balance_history():
     data = request.args
     email = data.get("email")
 
-    response = finance_controller.get_balance_history(email)
-    return response
+    response, status_code = finance_controller.get_balance_history(email)
+    return response, status_code
 
 
 @finance_blueprint.route("/add_loan", methods=["POST"])
@@ -76,8 +78,8 @@ def add_loan():
     amount = data.get("amount")
     category_name = data.get("category_name")
 
-    response = finance_controller.add_loan(email, amount, category_name)
-    return response
+    response, status_code = finance_controller.add_loan(email, amount, category_name)
+    return response, status_code
 
 
 @finance_blueprint.route("/get_loan_history", methods=["GET"])
@@ -85,5 +87,5 @@ def get_loan_history():
     logger.info("Rota que mostra o histórico de empréstimos")
     data = request.args
     email = data.get("email")
-    response = finance_controller.get_loan_history(email)
-    return response
+    response, status_code = finance_controller.get_loan_history(email)
+    return response, status_code

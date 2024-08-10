@@ -1,84 +1,42 @@
-"""
-Módulo que fornece funções para criar uma conexão com um banco de dados
-"""
-
-import sqlite3
-from core.logs.logger import setup_logger
-
-logger = setup_logger(__name__)
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from core.services.database.models.user import User
 
 
-def create_connection():
-    """Cria e retorna uma conexão com o banco de dados"""
-    connection = None
-    try:
-        connection = sqlite3.connect("database.db")
-        logger.info("Conexão com o banco criada com sucesso")
-    except sqlite3.Error as database_error:
-        logger.error(
-            "Ocorreu um erro ao conectar ao banco de dados: %s", database_error
-        )
-    return connection
+class DatabaseManager:
+    engine = None
+    Session = None
 
+    @classmethod
+    def initialize(cls, database_url):
+        cls.engine = create_engine(database_url)
+        cls.Session = sessionmaker(bind=cls.engine)
 
-def create_table():
-    """Cria as tabelas no banco de dados"""
-    connection = create_connection()
-    if connection:
-        try:
-            cursor = connection.cursor()
+    @classmethod
+    def session_execute_query(cls, query, one_row=False):
+        Session = sessionmaker(bind=cls.engine)
+        with Session() as session:
+            try:
+                result = session.execute(query)
+                return result.fetchone() if one_row else result.fetchall()
+            except Exception as e:
+                session.rollback()
+                raise e
 
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT NOT NULL,
-                    email TEXT NOT NULL UNIQUE,
-                    password TEXT NOT NULL
-                );
-            """
-            )
+    @classmethod
+    def session_insert_data(cls, entities: list):
+        with cls.session as session:
+            try:
+                session.add_all(entities)
+                session.commit()
+                session.expunge_all()
+                session.close()
+            except Exception as e:
+                session.rollback()
+                raise e
 
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS categories (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT UNIQUE NOT NULL
-                );
-            """
-            )
-
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS expenses (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    amount REAL NOT NULL,
-                    category_id INTEGER,
-                    user_id INTEGER,
-                    date DATE NOT NULL,
-                    FOREIGN KEY (category_id) REFERENCES categories (id),
-                    FOREIGN KEY (user_id) REFERENCES users (id)
-                );
-            """
-            )
-
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS loans (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    amount REAL NOT NULL,
-                    category_id INTEGER,
-                    user_id INTEGER,
-                    date DATE NOT NULL,
-                    FOREIGN KEY (category_id) REFERENCES categories (id),
-                    FOREIGN KEY (user_id) REFERENCES users (id)
-                );
-            """
-            )
-
-            connection.commit()
-            logger.info("Tabelas criadas com sucesso")
-        except sqlite3.Error as database_error:
-            logger.error("O erro '%s' ocorreu", database_error)
-        finally:
-            connection.close()
+    @classmethod
+    def migrate(
+        cls,
+    ):
+        User.migrate(cls.engine)
