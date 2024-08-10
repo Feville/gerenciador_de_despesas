@@ -4,7 +4,7 @@ Módulo que controla os acessos
 
 import bcrypt
 from flask import jsonify, Response
-from core.services.database.models.user import User
+from core.services.database.models.user import Users
 
 
 class AccessController:
@@ -16,10 +16,9 @@ class AccessController:
     def create_user(self, username, email, password) -> Response:
         "Cria um novo usuário e registra YYYY-MM-DD e H:M:S"
         try:
-            hashed_email = bcrypt.hashpw(email.encode("utf-8"), bcrypt.gensalt())
             hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-            new_user = User(
-                username=username, email=hashed_email, password=hashed_password
+            new_user = Users(
+                username=username, email=email, secret_pass=hashed_password
             )
             self.session.add(new_user)
             self.session.commit()
@@ -39,9 +38,9 @@ class AccessController:
 
     def login(self, email, password):
         "Verifica o login do usuário"
-        user = self.session.query(User).filter_by(email=email).first()
-        if user and bcrypt.checkpw(
-            password.encode("utf-8"), user.password.encode("utf-8")
-        ):
-            return jsonify({"msg": "Usuário logado", "email": email}), 200
+        user = self.session.query(Users).filter_by(email=email).first()
+        if user:
+            hashed_password = user.secret_pass
+            if bcrypt.checkpw(password.encode("utf-8"), hashed_password):
+                return jsonify({"msg": "Usuário logado", "email": email}), 200
         return jsonify({"msg": "Problema ao logar usuário"}), 400
