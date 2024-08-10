@@ -8,11 +8,12 @@ from core.services.controllers.access import AccessController
 from core.services.database.database import DatabaseManager
 
 DatabaseManager.initialize("sqlite:///database.db")
-session = DatabaseManager.Session()
+DatabaseManager.migrate()
 
 logger = setup_logger(__name__)
 access_blueprint = Blueprint("access", __name__)
 
+session = DatabaseManager.Session()
 access_controller = AccessController(session)
 
 

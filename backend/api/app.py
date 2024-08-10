@@ -8,9 +8,6 @@ from core.logs.logger import setup_logger
 
 logger = setup_logger(__name__)
 
-app = Flask(__name__)
-CORS(app)
-
 
 def create_app():
     app = Flask(__name__)

@@ -1,16 +1,19 @@
 from sqlalchemy import Column, String, Integer
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import relationship
+from core.services.database.models.base import Base
 
-Table = declarative_base()
 
-
-class User(Table):
-    __tablename__ = "user"
-    id = Column(Integer(), primary_key=True, autoincrement=True)
+class Users(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
-    password = Column(String(255), nullable=False)
+    secret_pass = Column(String(255), nullable=False)
+
+    expenses = relationship("Expenses", back_populates="user")
+    categories = relationship("Categories", back_populates="user")
+    loans = relationship("Loans", back_populates="user")
 
     @staticmethod
     def migrate(engine):
-        Table.metadata.create_all(engine)
+        Base.metadata.create_all(engine)
