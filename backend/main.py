@@ -2,10 +2,10 @@
 Módulo principal
 """
 
-from api.app import app
+from api.app import app, create_app
 import api.router
 from core.logs.logger import setup_logger
-from core.services.database.database import create_table
+from core.services.database.database import DatabaseManager
 
 logger = setup_logger(__name__)
 
@@ -18,5 +18,7 @@ def main():
 
 
 if __name__ == "__main__":
-    create_table()
+    create_app()
+    DatabaseManager.initialize("sqlite:///database.db")
+    DatabaseManager.migrate()
     main()

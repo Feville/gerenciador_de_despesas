@@ -2,19 +2,18 @@
 Rotas de acesso do usuário
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from core.logs.logger import setup_logger
 from core.services.controllers.access import AccessController
-from core.services.database.access import (
-    AccessDB,
-)
+from core.services.database.database import DatabaseManager
+
+DatabaseManager.initialize("sqlite:///database.db")
+session = DatabaseManager.Session()
 
 logger = setup_logger(__name__)
 access_blueprint = Blueprint("access", __name__)
 
-
-dao = AccessDB()
-access_controller = AccessController(dao)
+access_controller = AccessController(session)
 
 
 @access_blueprint.route("/alive")
@@ -32,9 +31,7 @@ def register():
     password = data.get("password")
     response, status_code = access_controller.create_user(username, email, password)
 
-    if status_code == 201:
-        return jsonify(response), 200
-    return jsonify(response), 400
+    return response, status_code
 
 
 @access_blueprint.route("/login", methods=["POST"])
