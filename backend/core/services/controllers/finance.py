@@ -159,20 +159,21 @@ class FinanceController:
         return jsonify({"expenses": expense_list}), 200
 
     def add_loan(
-        self, amount: float, category_name: str, user_id: int
+        self, email: str, amount: float, category_name: str
     ) -> Tuple[Response, int]:
         "Adiciona um novo empréstimo ao banco de dados"
         # TODO: Resolver problema de adicionar loan, categoria nunca é encontrada
         try:
             loan_date = datetime.now()
+            user_id = self.get_user_id_by_email(email)
+            if user_id is None:
+                return {"msg": "Usuário não encontrado"}, 400
 
             category = (
-                self.session.query(Categories)
-                .filter_by(name=category_name)
-                .one_or_none()
+                self.session.query(Categories).filter_by(name=category_name).first()
             )
             if category is None:
-                return jsonify({"error": "Categoria não encontrada."}), 404
+                return jsonify({"msg": "Categoria não encontrada"}), 400
 
             new_loan = Loans(
                 amount=amount, category_id=category.id, user_id=user_id, date=loan_date
