@@ -5,16 +5,11 @@ Rotas de acesso do usuário
 from flask import Blueprint, request
 from core.logs.logger import setup_logger
 from core.services.controllers.access import AccessController
-from core.services.database.database import DatabaseManager
-
-DatabaseManager.initialize("sqlite:///database.db")
-DatabaseManager.migrate()
 
 logger = setup_logger(__name__)
 access_blueprint = Blueprint("access", __name__)
 
-session = DatabaseManager.Session()
-access_controller = AccessController(session)
+access_controller = AccessController()
 
 
 @access_blueprint.route("/alive")
