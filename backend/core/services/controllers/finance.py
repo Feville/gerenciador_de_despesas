@@ -8,6 +8,7 @@ from flask import Response, jsonify
 from pytz import timezone
 from sqlalchemy import func, extract
 from sqlalchemy.orm import aliased
+from core.services.database.database import DatabaseManager
 from core.services.database.models.user import Users
 from core.services.database.models.categories import Categories
 from core.services.database.models.loans import Loans
@@ -17,12 +18,17 @@ from core.services.database.models.expenses import Expenses
 class FinanceController:
     "Gerencia as finanças dos usuários"
 
-    def __init__(self, session) -> None:
-        self.session = session
+    def __init__(self) -> None:
+        self.db_manager = DatabaseManager()
+
+    def _get_session(self):
+        "Inicia a sessão do banco"
+        session = self.db_manager.Session()
+        return session
 
     def _get_user_id_by_email(self, email: str) -> Optional[int]:
         "Retorna o user_id pelo email do usuário"
-        user = self.session.query(Users).filter_by(email=email).first()
+        user = self._get_session().query(Users).filter_by(email=email).first()
         if user:
             return user.id
         return None
@@ -30,7 +36,7 @@ class FinanceController:
     def _get_category_id_by_name(self, category_name: str) -> Optional[int]:
         "Retorna o category id pelo nome da categoria"
         category_id = (
-            self.session.query(Categories).filter_by(name=category_name).first()
+            self._get_session().query(Categories).filter_by(name=category_name).first()
         )
         if category_id:
             return category_id
@@ -45,7 +51,8 @@ class FinanceController:
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
         total_amount = (
-            self.session.query(func.sum(Expenses.amount))
+            self._get_session()
+            .query(func.sum(Expenses.amount))
             .filter_by(user_id=user_id)
             .scalar()
         )
@@ -65,7 +72,8 @@ class FinanceController:
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
         total_amount = (
-            self.session.query(func.sum(Expenses.amount))
+            self._get_session()
+            .query(func.sum(Expenses.amount))
             .filter(
                 Expenses.user_id == user_id,
                 extract("year", Expenses.date) == int(year),
@@ -97,7 +105,10 @@ class FinanceController:
                 return jsonify({"msg": "Usuário não encontrado"}), 400
 
             category = (
-                self.session.query(Categories).filter_by(name=category_name).first()
+                self._get_session()
+                .query(Categories)
+                .filter_by(name=category_name)
+                .first()
             )
             if category is None:
                 return jsonify({"msg": "Categoria não encontrada"}), 400
@@ -106,12 +117,12 @@ class FinanceController:
                 amount=amount, user_id=user_id, category_id=category.id, date=date
             )
 
-            self.session.add(new_expense)
-            self.session.commit()
+            self._get_session().add(new_expense)
+            self._get_session().commit()
             return jsonify({"msg": "Despesa adicionada com sucesso"}), 201
 
         except Exception as e:
-            self.session.rollback()
+            self._get_session().rollback()
             return (
                 jsonify({"msg": f"Falha ao adicionar despesa. O erro {e} ocorreu"}),
                 500,
@@ -126,7 +137,8 @@ class FinanceController:
                 return {"msg": "Usuário não encontrado"}, 400
 
             existing_category = (
-                self.session.query(Categories)
+                self._get_session()
+                .query(Categories)
                 .filter_by(name=category_name)
                 .one_or_none()
             )
@@ -134,8 +146,8 @@ class FinanceController:
                 return {"msg": "Categoria já existe"}, 400
 
             add_category = Categories(name=category_name, user_id=user_id)
-            self.session.add(add_category)
-            self.session.commit()
+            self._get_session().add(add_category)
+            self._get_session().commit()
 
             return {"msg": "Categoria criada com sucesso"}, 201
         except Exception as e:
@@ -149,7 +161,8 @@ class FinanceController:
             return jsonify({"msg": "Usuário não encontrado"}), 400
         category_alias = aliased(Categories)
         expenses = (
-            self.session.query(Expenses, category_alias.name.label("category_name"))
+            self._get_session()
+            .query(Expenses, category_alias.name.label("category_name"))
             .join(category_alias, Expenses.category_id == category_alias.id)
             .filter(Expenses.user_id == user_id)
             .order_by(Expenses.date.desc())
@@ -178,7 +191,10 @@ class FinanceController:
                 return {"msg": "Usuário não encontrado"}, 400
 
             category = (
-                self.session.query(Categories).filter_by(name=category_name).first()
+                self._get_session()
+                .query(Categories)
+                .filter_by(name=category_name)
+                .first()
             )
             if category is None:
                 return jsonify({"msg": "Categoria não encontrada"}), 400
@@ -187,13 +203,13 @@ class FinanceController:
                 amount=amount, category_id=category.id, user_id=user_id, date=loan_date
             )
 
-            self.session.add(new_loan)
-            self.session.commit()
+            self._get_session().add(new_loan)
+            self._get_session().commit()
 
             return jsonify({"msg": "Empréstimo adicionado com sucesso."}), 201
 
         except Exception as e:
-            self.session.rollback()
+            self._get_session().rollback()
             return (
                 jsonify(
                     {"error": f"Falha ao adicionar empréstimo. O erro {e} ocorreu."}
@@ -207,7 +223,8 @@ class FinanceController:
         category_alias = aliased(Categories)
 
         loans = (
-            self.session.query(Loans, category_alias.name.label("category_name"))
+            self._get_session()
+            .query(Loans, category_alias.name.label("category_name"))
             .join(category_alias, Loans.category_id == category_alias.id)
             .filter(Loans.user_id == user_id)
             .order_by(Loans.date.desc())

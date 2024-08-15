@@ -5,16 +5,11 @@ Rotas de finanças do usuário
 from flask import Blueprint, request
 from core.logs.logger import setup_logger
 from core.services.controllers.finance import FinanceController
-from core.services.database.database import DatabaseManager
-
-DatabaseManager.initialize("sqlite:///database.db")
-DatabaseManager.migrate()
 
 logger = setup_logger(__name__)
 finance_blueprint = Blueprint("finance", __name__)
 
-session = DatabaseManager.Session()
-finance_controller = FinanceController(session)
+finance_controller = FinanceController()
 
 
 @finance_blueprint.route("/get_balance", methods=["GET"])
