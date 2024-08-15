@@ -20,12 +20,20 @@ class FinanceController:
     def __init__(self, session) -> None:
         self.session = session
 
-    def get_user_id_by_email(self, email: str) -> Optional[int]:
+    def _get_user_id_by_email(self, email: str) -> Optional[int]:
         "Retorna o user_id pelo email do usuário"
-        # TODO: Refatorar validações
         user = self.session.query(Users).filter_by(email=email).first()
         if user:
             return user.id
+        return None
+
+    def _get_category_id_by_name(self, category_name: str) -> Optional[int]:
+        "Retorna o category id pelo nome da categoria"
+        category_id = (
+            self.session.query(Categories).filter_by(name=category_name).first()
+        )
+        if category_id:
+            return category_id
         return None
 
     def get_user_balance(self, email: str) -> Tuple[Response, int]:
@@ -33,7 +41,7 @@ class FinanceController:
         # TODO: Refatorar validações
         if not email:
             return jsonify({"msg": "Email não preenchido"}), 400
-        user_id = self.get_user_id_by_email(email)
+        user_id = self._get_user_id_by_email(email)
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
         total_amount = (
@@ -53,7 +61,7 @@ class FinanceController:
         if len(date_parts) != 2:
             return jsonify({"msg": "Data inválida, deve ser no formato 'YYYY-MM'"}), 400
         year, month = date_parts
-        user_id = self.get_user_id_by_email(email)
+        user_id = self._get_user_id_by_email(email)
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
         total_amount = (
@@ -84,7 +92,7 @@ class FinanceController:
                     400,
                 )
 
-            user_id = self.get_user_id_by_email(email)
+            user_id = self._get_user_id_by_email(email)
             if user_id is None:
                 return jsonify({"msg": "Usuário não encontrado"}), 400
 
@@ -113,7 +121,7 @@ class FinanceController:
         "Cria categoria"
         # TODO: Refatorar validações
         try:
-            user_id = self.get_user_id_by_email(email)
+            user_id = self._get_user_id_by_email(email)
             if user_id is None:
                 return {"msg": "Usuário não encontrado"}, 400
 
@@ -136,7 +144,7 @@ class FinanceController:
     def get_balance_history(self, email: str) -> Tuple[Response, int]:
         "Lista os gastos do usuário"
         # TODO: Refatorar validações
-        user_id = self.get_user_id_by_email(email)
+        user_id = self._get_user_id_by_email(email)
         if user_id is None:
             return jsonify({"msg": "Usuário não encontrado"}), 400
         category_alias = aliased(Categories)
@@ -165,7 +173,7 @@ class FinanceController:
         # TODO: Resolver problema de adicionar loan, categoria nunca é encontrada
         try:
             loan_date = datetime.now()
-            user_id = self.get_user_id_by_email(email)
+            user_id = self._get_user_id_by_email(email)
             if user_id is None:
                 return {"msg": "Usuário não encontrado"}, 400
 
