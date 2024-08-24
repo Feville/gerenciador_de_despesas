@@ -2,46 +2,38 @@
 Rotas de finanças do usuário
 """
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from core.logs.logger import setup_logger
 from core.services.controllers.finance import FinanceController
-from core.services.database.database import DatabaseManager
-
-DatabaseManager.initialize("sqlite:///database.db")
-DatabaseManager.migrate()
 
 logger = setup_logger(__name__)
 finance_blueprint = Blueprint("finance", __name__)
 
-session = DatabaseManager.Session()
-finance_controller = FinanceController(session)
+finance_controller = FinanceController()
 
 
-@finance_blueprint.route("/get_balance", methods=["GET"])
-def get_balance():
+@finance_blueprint.route("/get_balance/<email>", methods=["GET"])
+def get_balance(email: str):
     logger.info("Rota que mostra o saldo do usuário")
-    data = request.args
-    email = data.get("email")
-
     response = finance_controller.get_user_balance(email)
-    return response
+    if response:
+        return jsonify({"msg": response}), 200
+    return jsonify({"msg": response}), 400
 
 
-@finance_blueprint.route("/get_balance_by_date", methods=["GET"])
-def get_balance_by_date():
+@finance_blueprint.route("/get_balance_by_date/<email>/<date>", methods=["GET"])
+def get_balance_by_date(email: str, date: str):
     logger.info("Rota que mostra o saldo do usuário pela data")
-    data = request.args
-    email = data.get("email")
-    date = data.get("date")
-
-    response = finance_controller.get_balance_by_date(email, date)
-    return response
+    total_amount = finance_controller.get_balance_by_date(email, date)
+    return jsonify({"msg": total_amount})
 
 
 @finance_blueprint.route("/add_user_balance", methods=["POST"])
 def add_user_balance():
     logger.info("Rota que adiciona saldo e categoria do gasto do usuário")
     data = request.json
+    if data is None:
+        return {"error": "Dados JSON não fornecidos"}, 400
     email = data.get("email")
     amount = data.get("amount")
     category_name = data.get("category_name")
@@ -54,19 +46,20 @@ def add_user_balance():
 def create_category():
     logger.info("Rota que cria categorias")
     data = request.json
+    if data is None:
+        return {"error": "Dados JSON não fornecidos"}, 400
     email = data.get("email")
     category_name = data.get("category_name")
 
     response = finance_controller.create_category(email, category_name)
-    return response
+    if response:
+        return jsonify({"msg": "Adicionado com sucesso"}), 200
+    return jsonify({"msg": "Categoria não pode ser criada"}), 400
 
 
-@finance_blueprint.route("/get_balance_history", methods=["GET"])
-def get_balance_history():
+@finance_blueprint.route("/get_balance_history/<email>", methods=["GET"])
+def get_balance_history(email: str):
     logger.info("Rota que lista os gastos do usuário")
-    data = request.args
-    email = data.get("email")
-
     response, status_code = finance_controller.get_balance_history(email)
     return response, status_code
 
@@ -75,18 +68,20 @@ def get_balance_history():
 def add_loan():
     logger.info("Rota que adiciona empréstimo")
     data = request.json
+    if data is None:
+        return {"error": "Dados JSON não fornecidos"}, 400
     email = data.get("email")
     amount = data.get("amount")
     category_name = data.get("category_name")
 
     response = finance_controller.add_loan(email, amount, category_name)
-    return response
+    if response:
+        return jsonify({"msg": "Empréstimo adicionado com sucesso."}), 201
+    return {"msg": "Usuário não encontrado"}, 400
 
 
-@finance_blueprint.route("/get_loan_history", methods=["GET"])
-def get_loan_history():
+@finance_blueprint.route("/get_loan_history/<email>", methods=["GET"])
+def get_loan_history(email: str):
     logger.info("Rota que mostra o histórico de empréstimos")
-    data = request.args
-    email = data.get("email")
     response = finance_controller.get_loan_history(email)
     return response

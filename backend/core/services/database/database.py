@@ -5,25 +5,24 @@ from core.services.database.models.user import Users
 from core.services.database.models.categories import Categories
 from core.services.database.models.expenses import Expenses
 from core.services.database.models.loans import Loans
+from consts import DATABASE_URL
+
+engine = create_engine(url=DATABASE_URL)
 
 
 class DatabaseManager:
-    engine = None
-    Session = None
+    def __init__(self):
+        self.Session = sessionmaker(bind=engine)
 
-    @classmethod
-    def initialize(cls, database_url):
-        cls.engine = create_engine(database_url)
-        cls.Session = sessionmaker(bind=cls.engine)
+    def initialize(self, database_url):
+        engine = create_engine(database_url)
+        self.Session.configure(bind=engine)
 
-    @classmethod
-    def create_tables(cls):
-        Base.metadata.create_all(cls.engine)
+    def create_tables(self):
+        Base.metadata.create_all(engine)
 
-    @classmethod
-    def session_execute_query(cls, query, one_row=False):
-        Session = cls.Session
-        with Session() as session:
+    def session_execute_query(self, query, one_row=False):
+        with self.Session() as session:
             try:
                 result = session.execute(query)
                 return result.fetchone() if one_row else result.fetchall()
@@ -31,24 +30,18 @@ class DatabaseManager:
                 session.rollback()
                 raise e
 
-    @classmethod
-    def session_insert_data(cls, entities: list):
-        Session = cls.Session
-        with Session as session:
+    def session_insert_data(self, entities: list):
+        with self.Session() as session:
             try:
                 session.add_all(entities)
                 session.commit()
                 session.expunge_all()
-                session.close()
             except Exception as e:
                 session.rollback()
                 raise e
 
-    @classmethod
-    def migrate(
-        cls,
-    ):
-        Users.migrate(cls.engine)
-        Categories.migrate(cls.engine)
-        Expenses.migrate(cls.engine)
-        Loans.migrate(cls.engine)
+    def migrate(self):
+        Users.migrate(engine)
+        Categories.migrate(engine)
+        Expenses.migrate(engine)
+        Loans.migrate(engine)

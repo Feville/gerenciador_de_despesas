@@ -25,9 +25,9 @@ def register():
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
-    response, status_code = access_controller.create_user(username, email, password)
+    response = access_controller.create_user(username, email, password)
 
-    return response, status_code
+    return response
 
 
 @access_blueprint.route("/login", methods=["POST"])

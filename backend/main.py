@@ -20,6 +20,5 @@ def main():
 
 if __name__ == "__main__":
     create_app()
-    DatabaseManager.initialize("sqlite:///database.db")
-    DatabaseManager.migrate()
+    DatabaseManager().migrate()
     main()
