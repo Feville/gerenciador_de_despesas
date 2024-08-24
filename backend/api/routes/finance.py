@@ -85,3 +85,10 @@ def get_loan_history(email: str):
     logger.info("Rota que mostra o histórico de empréstimos")
     response = finance_controller.get_loan_history(email)
     return response
+
+
+@finance_blueprint.route("/get_categories/<email>", methods=["GET"])
+def get_history(email: str):
+    logger.info("Rota que mostra todas as categorias")
+    response = finance_controller.get_categories(email)
+    return jsonify({response})

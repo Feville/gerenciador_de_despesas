@@ -131,7 +131,6 @@ class FinanceController:
         with self._get_session() as session:
             user = self._get_user_id_by_email(email)
             user_id = user["id"]
-            # self.verify_category_by_name(category_name) if not exists é uma query, não precisa de função
             new_category = Categories(name=category_name, user_id=user_id)
             session.add(new_category)
             session.commit()
@@ -207,3 +206,10 @@ class FinanceController:
         ]
 
         return loan_list
+
+    def get_categories(self, email: str) -> dict:
+        user = self._get_user_id_by_email(email)
+        user_id = user["id"]
+        categories = self.session.query(Categories).filter_by(user_id=user_id).all()
+        categories_list = [{"name": category.name} for category in categories]
+        return categories_list
