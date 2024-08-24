@@ -17,214 +17,179 @@ from core.services.database.models.expenses import Expenses
 
 class FinanceController:
     "Gerencia as finanças dos usuários"
+    session = DatabaseManager().Session()
 
     def __init__(self) -> None:
-        self.db_manager = DatabaseManager()
+        pass
 
     def _get_session(self):
         "Inicia a sessão do banco"
-        session = self.db_manager.Session()
-        return session
+        return self.session
 
-    def _get_user_id_by_email(self, email: str) -> Optional[int]:
+    def _get_user_id_by_email(self, email: str) -> dict:
         "Retorna o user_id pelo email do usuário"
-        user = self._get_session().query(Users).filter_by(email=email).first()
-        if user:
-            return user.id
-        return None
+        with self._get_session() as session:
+            user = session.query(Users).filter_by(email=email).first()
+            return {"id": user.id}
 
-    def _get_category_id_by_name(self, category_name: str) -> Optional[int]:
-        "Retorna o category id pelo nome da categoria"
-        category_id = (
-            self._get_session().query(Categories).filter_by(name=category_name).first()
-        )
-        if category_id:
-            return category_id
-        return None
-
-    def get_user_balance(self, email: str) -> Tuple[Response, int]:
-        "Obtém o saldo do usuário"
-        # TODO: Refatorar validações
-        if not email:
-            return jsonify({"msg": "Email não preenchido"}), 400
-        user_id = self._get_user_id_by_email(email)
-        if user_id is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
-        total_amount = (
-            self._get_session()
-            .query(func.sum(Expenses.amount))
-            .filter_by(user_id=user_id)
-            .scalar()
-        )
-        return (
-            jsonify({"balance": total_amount if total_amount is not None else 0}),
-            200,
-        )
-
-    def get_balance_by_date(self, email: str, date: str) -> Tuple[Response, float]:
-        "Obtém o saldo do usuário pela data"
-        # TODO: Refatorar validações
-        date_parts = date.split("-")
-        if len(date_parts) != 2:
-            return jsonify({"msg": "Data inválida, deve ser no formato 'YYYY-MM'"}), 400
-        year, month = date_parts
-        user_id = self._get_user_id_by_email(email)
-        if user_id is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
-        total_amount = (
-            self._get_session()
-            .query(func.sum(Expenses.amount))
-            .filter(
-                Expenses.user_id == user_id,
-                extract("year", Expenses.date) == int(year),
-                extract("month", Expenses.date) == int(month),
+    def get_total_amount_expenses(self, user_id: int):
+        with self._get_session() as session:
+            total_amount = (
+                session.query(func.sum(Expenses.amount))
+                .filter_by(user_id=user_id)
+                .scalar()
             )
-            .scalar()
-        )
-        return (
-            jsonify({"balance": total_amount if total_amount is not None else 0}),
-            200,
-        )
+            total_amount = total_amount if total_amount is not None else 0
+            return total_amount
+
+    def get_total_amount_expenses_by_date(self, user_id: int, year: str, month: str):
+        with self._get_session() as session:
+            total_amount = (
+                session.query(func.sum(Expenses.amount))
+                .filter(
+                    Expenses.user_id == user_id,
+                    extract("year", Expenses.date) == int(year),
+                    extract("month", Expenses.date) == int(month),
+                )
+                .scalar()
+            )
+            total_amount = total_amount if total_amount is not None else 0
+            return total_amount
+
+    def _verify_date(self, date: str):
+        date_parts = date.split("-")
+        if len(date_parts) != 3:
+            return date_parts
+        _, month, year = date_parts
+        return month, year
+
+    def get_category_id_by_name(self, email: str, category_name: str) -> dict:
+        "Retorna o category id pelo nome da categoria"
+        with self._get_session() as session:
+            category = session.query(Categories).filter_by(name=category_name).first()
+            if category is None:
+                category = self.create_category(email, category_name)
+            return {"id": category.id}
+
+    def validate_amount(self, amount: float) -> Optional[int]:
+        if amount <= 0:
+            return False
+
+    def verify_category_by_name(self, category_name):
+        with self._get_session() as session:
+            category = session.query(Categories).filter_by(name=category_name).first()
+            if category is not None:
+                return False
+        return True
+
+    def add_expense_to_db(
+        self, user_id: int, category_id: int, amount: float, date: datetime
+    ) -> Optional[bool]:
+        try:
+            with self._get_session() as session:
+                new_expense = Expenses(
+                    amount=amount, user_id=user_id, category_id=category_id, date=date
+                )
+                session.add(new_expense)
+                session.commit()
+                return True
+        except Exception:
+            session.rollback()
+            return False
 
     def add_user_balance(
         self, email: str, amount: float, category_name: str
     ) -> Tuple[Response, int]:
-        # TODO: Refatorar validações
-        try:
-            "Adiciona saldo ao usuário na categoria escolhida e grava a data da transação"
-            date = datetime.now().astimezone(timezone("America/Sao_Paulo"))
+        """"""
+        date = datetime.now().astimezone(timezone("America/Sao_Paulo"))
+        self.validate_amount(amount)
+        user = self._get_user_id_by_email(email)
+        user_id = user["id"]
+        category = self.get_category_id_by_name(email, category_name)
+        category_id = category["id"]
+        self.add_expense_to_db(user_id, category_id, amount, date)
 
-            if amount <= 0:
-                return (
-                    jsonify({"error": "O valor a ser adicionado deve ser positivo."}),
-                    400,
-                )
+        return jsonify({"msg": "Despesa adicionada com sucesso"}), 201
 
-            user_id = self._get_user_id_by_email(email)
-            if user_id is None:
-                return jsonify({"msg": "Usuário não encontrado"}), 400
+    def get_user_balance(self, email: str) -> Optional[int]:
+        "Obtém o saldo do usuário"
+        user = self._get_user_id_by_email(email)
+        user_id = user["id"]
+        total_amount = self.get_total_amount_expenses(user_id)
+        return total_amount
 
-            category = (
-                self._get_session()
-                .query(Categories)
-                .filter_by(name=category_name)
-                .first()
-            )
-            if category is None:
-                return jsonify({"msg": "Categoria não encontrada"}), 400
+    def get_balance_by_date(self, email: str, date: str) -> Optional[int]:
+        "Obtém o saldo do usuário pela data"
+        year, month = self._verify_date(date)
+        user = self._get_user_id_by_email(email)
+        user_id = user["id"]
+        total_amount = self.get_total_amount_expenses_by_date(user_id, year, month)
+        return total_amount
 
-            new_expense = Expenses(
-                amount=amount, user_id=user_id, category_id=category.id, date=date
-            )
-
-            self._get_session().add(new_expense)
-            self._get_session().commit()
-            return jsonify({"msg": "Despesa adicionada com sucesso"}), 201
-
-        except Exception as e:
-            self._get_session().rollback()
-            return (
-                jsonify({"msg": f"Falha ao adicionar despesa. O erro {e} ocorreu"}),
-                500,
-            )
-
-    def create_category(self, email: str, category_name: str) -> Tuple[dict, int]:
+    def create_category(self, email: str, category_name: str) -> Categories:
         "Cria categoria"
-        # TODO: Refatorar validações
-        try:
-            user_id = self._get_user_id_by_email(email)
-            if user_id is None:
-                return {"msg": "Usuário não encontrado"}, 400
+        with self._get_session() as session:
+            user = self._get_user_id_by_email(email)
+            user_id = user["id"]
+            # self.verify_category_by_name(category_name) if not exists é uma query, não precisa de função
+            new_category = Categories(name=category_name, user_id=user_id)
+            session.add(new_category)
+            session.commit()
+            return new_category
 
-            existing_category = (
-                self._get_session()
-                .query(Categories)
-                .filter_by(name=category_name)
-                .one_or_none()
-            )
-            if existing_category is not None:
-                return {"msg": "Categoria já existe"}, 400
-
-            add_category = Categories(name=category_name, user_id=user_id)
-            self._get_session().add(add_category)
-            self._get_session().commit()
-
-            return {"msg": "Categoria criada com sucesso"}, 201
-        except Exception as e:
-            return {"msg": f"Falha ao criar categoria. O erro {e} ocorreu"}, 500
-
-    def get_balance_history(self, email: str) -> Tuple[Response, int]:
+    def get_balance_history(self, email: str) -> dict:
         "Lista os gastos do usuário"
-        # TODO: Refatorar validações
-        user_id = self._get_user_id_by_email(email)
-        if user_id is None:
-            return jsonify({"msg": "Usuário não encontrado"}), 400
-        category_alias = aliased(Categories)
-        expenses = (
-            self._get_session()
-            .query(Expenses, category_alias.name.label("category_name"))
-            .join(category_alias, Expenses.category_id == category_alias.id)
-            .filter(Expenses.user_id == user_id)
-            .order_by(Expenses.date.desc())
-            .all()
-        )
-        expense_list = [
-            {
-                "id": exp[0].id,
-                "amount": exp[0].amount,
-                "category": exp[1],
-                "date": exp[0].date.strftime("%Y-%m-%d"),
-            }
-            for exp in expenses
-        ]
-        return jsonify({"expenses": expense_list}), 200
-
-    def add_loan(
-        self, email: str, amount: float, category_name: str
-    ) -> Tuple[Response, int]:
-        "Adiciona um novo empréstimo ao banco de dados"
-        # TODO: Resolver problema de adicionar loan, categoria nunca é encontrada
-        try:
-            loan_date = datetime.now()
-            user_id = self._get_user_id_by_email(email)
+        with self._get_session() as session:
+            user = self._get_user_id_by_email(email)
+            user_id = user["id"]
             if user_id is None:
-                return {"msg": "Usuário não encontrado"}, 400
-
-            category = (
-                self._get_session()
-                .query(Categories)
-                .filter_by(name=category_name)
-                .first()
+                return {"msg": "Usuário não encontrado"}
+            category_alias = aliased(Categories)
+            expenses = (
+                session.query(Expenses, category_alias.name.label("category_name"))
+                .join(category_alias, Expenses.category_id == category_alias.id)
+                .filter(Expenses.user_id == user_id)
+                .order_by(Expenses.date.desc())
+                .all()
             )
-            if category is None:
-                return jsonify({"msg": "Categoria não encontrada"}), 400
+            expense_list = [
+                {
+                    "id": exp[0].id,
+                    "amount": exp[0].amount,
+                    "category": exp[1],
+                    "date": exp[0].date.strftime("%Y-%m-%d"),
+                }
+                for exp in expenses
+            ]
+        return {"expenses": expense_list}
 
-            new_loan = Loans(
-                amount=amount, category_id=category.id, user_id=user_id, date=loan_date
-            )
+    def add_loan(self, email: str, amount: float, category_name: str) -> bool:
+        "Adiciona um novo empréstimo ao banco de dados"
+        loan_date = datetime.now()
+        user = self._get_user_id_by_email(email)
+        user_id = user["id"]
+        if user_id is None:
+            return False
 
-            self._get_session().add(new_loan)
-            self._get_session().commit()
+        category = self.session.query(Categories).filter_by(name=category_name).first()
+        if category is None:
+            return False
 
-            return jsonify({"msg": "Empréstimo adicionado com sucesso."}), 201
+        new_loan = Loans(
+            amount=amount, category_id=category.id, user_id=user_id, date=loan_date
+        )
+        self.session.add(new_loan)
+        self.session.commit()
+        return True
 
-        except Exception as e:
-            self._get_session().rollback()
-            return (
-                jsonify(
-                    {"error": f"Falha ao adicionar empréstimo. O erro {e} ocorreu."}
-                ),
-                500,
-            )
-
-    def get_loan_history(self, user_id: int) -> List[Dict[str, any]]:
+    def get_loan_history(self, email: str) -> List[Dict[str, str]]:
         "Obtém o histórico de empréstimos do usuário"
-        # TODO: Refatorar validações
+        user = self._get_user_id_by_email(email)
+        user_id = user["id"]
         category_alias = aliased(Categories)
 
         loans = (
-            self._get_session()
-            .query(Loans, category_alias.name.label("category_name"))
+            self.session.query(Loans, category_alias.name.label("category_name"))
             .join(category_alias, Loans.category_id == category_alias.id)
             .filter(Loans.user_id == user_id)
             .order_by(Loans.date.desc())
