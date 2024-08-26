@@ -25,7 +25,7 @@ def get_balance(email: str):
 def get_balance_by_date(email: str, date: str):
     logger.info("Rota que mostra o saldo do usuário pela data")
     total_amount = finance_controller.get_balance_by_date(email, date)
-    return jsonify({"msg": total_amount})
+    return jsonify({"total_amount": total_amount})
 
 
 @finance_blueprint.route("/add_user_balance", methods=["POST"])
@@ -39,7 +39,9 @@ def add_user_balance():
     category_name = data.get("category_name")
 
     response = finance_controller.add_user_balance(email, amount, category_name)
-    return response
+    if response:
+        return jsonify({"msg": "Despesa adicionada com sucesso"}), 201
+    return jsonify({"msg": "Erro ao adicionar despesa"}), 400
 
 
 @finance_blueprint.route("/create_category", methods=["POST"])
@@ -60,8 +62,8 @@ def create_category():
 @finance_blueprint.route("/get_balance_history/<email>", methods=["GET"])
 def get_balance_history(email: str):
     logger.info("Rota que lista os gastos do usuário")
-    response, status_code = finance_controller.get_balance_history(email)
-    return response, status_code
+    response = finance_controller.get_balance_history(email)
+    return jsonify(response)
 
 
 @finance_blueprint.route("/add_loan", methods=["POST"])
@@ -84,7 +86,7 @@ def add_loan():
 def get_loan_history(email: str):
     logger.info("Rota que mostra o histórico de empréstimos")
     response = finance_controller.get_loan_history(email)
-    return response
+    return jsonify(response)
 
 
 @finance_blueprint.route("/get_categories/<email>", methods=["GET"])

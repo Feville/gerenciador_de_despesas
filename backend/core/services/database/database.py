@@ -30,10 +30,10 @@ class DatabaseManager:
                 session.rollback()
                 raise e
 
-    def session_insert_data(self, entities: list):
+    def session_insert_data(self, entitie: str):
         with self.Session() as session:
             try:
-                session.add_all(entities)
+                session.add(entitie)
                 session.commit()
             except Exception as e:
                 session.rollback()
