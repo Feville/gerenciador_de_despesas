@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, LargeBinary
 from sqlalchemy.orm import relationship
 from core.services.database.models.base import Base
 
@@ -8,7 +8,7 @@ class Users(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
-    secret_pass = Column(String(255), nullable=False)
+    secret_pass = Column(LargeBinary, nullable=False)
 
     expenses = relationship("Expenses", back_populates="user")
     categories = relationship("Categories", back_populates="user")

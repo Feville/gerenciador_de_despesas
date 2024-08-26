@@ -2,7 +2,7 @@
 Rotas de acesso do usuário
 """
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from core.logs.logger import setup_logger
 from core.services.controllers.access import AccessController
 
@@ -22,20 +22,27 @@ def alive():
 def register():
     logger.info("Rota que cadastra usuário")
     data = request.json
+    if data is None:
+        return {"error": "Dados JSON não fornecidos"}, 400
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
     response = access_controller.create_user(username, email, password)
-
-    return response
+    if response:
+        return jsonify({"msg": "Usuário registrado"}), 201
+    return jsonify({"msg": "Problema ao regitsrar usuário"}), 400
 
 
 @access_blueprint.route("/login", methods=["POST"])
 def login():
     logger.info("Rota que faz o login dos usuários")
     data = request.json
+    if data is None:
+        return {"error": "Dados JSON não fornecidos"}, 400
     email = data.get("email")
     password = data.get("password")
 
     response = access_controller.login(email, password)
-    return response
+    if response:
+        return jsonify({"msg": "Usuário logado", "email": email}), 200
+    return jsonify({"msg": "Problema ao logar usuário:"}), 400
