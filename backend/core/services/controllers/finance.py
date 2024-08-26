@@ -207,7 +207,7 @@ class FinanceController:
 
         return loan_list
 
-    def get_categories(self, email: str) -> dict:
+    def get_categories(self, email: str) -> list:
         user = self._get_user_id_by_email(email)
         user_id = user["id"]
         categories = self.session.query(Categories).filter_by(user_id=user_id).all()

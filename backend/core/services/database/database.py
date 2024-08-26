@@ -35,7 +35,6 @@ class DatabaseManager:
             try:
                 session.add_all(entities)
                 session.commit()
-                session.expunge_all()
             except Exception as e:
                 session.rollback()
                 raise e

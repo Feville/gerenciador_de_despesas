@@ -91,4 +91,4 @@ def get_loan_history(email: str):
 def get_history(email: str):
     logger.info("Rota que mostra todas as categorias")
     response = finance_controller.get_categories(email)
-    return jsonify({response})
+    return jsonify(response)
