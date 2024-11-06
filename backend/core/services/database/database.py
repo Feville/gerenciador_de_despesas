@@ -41,9 +41,7 @@ class DatabaseManager:
                 session.add(entitie)
                 session.commit()
                 return True
-            except Exception as e:
-                session.rollback()
-                raise e
+
 
     def migrate(self):
         Users.migrate(engine)

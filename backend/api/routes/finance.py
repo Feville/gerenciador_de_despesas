@@ -95,6 +95,7 @@ def get_loan_history(email: str):
     return jsonify({"msg": response}), 200
 
 
+
 @finance_blueprint.route("/get_categories/<email>", methods=["GET"])
 def get_history(email: str):
     logger.info("Rota que mostra todas as categorias")
