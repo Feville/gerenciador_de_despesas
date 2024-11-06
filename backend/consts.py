@@ -1,3 +1,5 @@
 import os
 
 DATABASE_URL = str(os.getenv("DATABASE_URL"))
+BASIC_AUTH_PASSWORD = str(os.getenv("BASIC_AUTH_PASSWORD"))
+BASIC_AUTH_USERNAME = str(os.getenv("BASIC_AUTH_USERNAME"))

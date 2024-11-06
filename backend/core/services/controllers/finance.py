@@ -3,8 +3,7 @@ Módulo que controla as finanças
 """
 
 from datetime import datetime
-from typing import Tuple, Optional, List, Dict
-from flask import Response, jsonify
+from typing import Optional, List, Dict
 from pytz import timezone
 from sqlalchemy import func, extract
 from sqlalchemy.orm import aliased
@@ -13,6 +12,7 @@ from core.services.database.models.user import Users
 from core.services.database.models.categories import Categories
 from core.services.database.models.loans import Loans
 from core.services.database.models.expenses import Expenses
+from api.routes.models.exceptions.finance import ExceptionError
 
 
 class FinanceController:
@@ -31,8 +31,10 @@ class FinanceController:
         with self._get_session() as session:
             user = session.query(Users).filter_by(email=email).first()
             return {"id": user.id}
+        raise ExceptionError("Usuário não encontrado")
 
     def get_total_amount_expenses(self, user_id: int):
+        "Retorna o total de gastos do usuário do banco"
         with self._get_session() as session:
             total_amount = (
                 session.query(func.sum(Expenses.amount))
@@ -41,8 +43,10 @@ class FinanceController:
             )
             total_amount = total_amount if total_amount is not None else 0
             return total_amount
+        raise ExceptionError("Erro ao buscar total de gastos")
 
     def get_total_amount_expenses_by_date(self, user_id: int, year: str, month: str):
+        "Retorna o total de gasto pela data do banco"
         with self._get_session() as session:
             total_amount = (
                 session.query(func.sum(Expenses.amount))
@@ -55,8 +59,10 @@ class FinanceController:
             )
             total_amount = total_amount if total_amount is not None else 0
             return total_amount
+        raise ExceptionError("Erro ao buscar total de gastos pela data")
 
     def _verify_date(self, date: str):
+        "Formata a data yyyy-mm"
         date_parts = date.split("-")
         if len(date_parts) != 3:
             return date_parts
@@ -70,12 +76,16 @@ class FinanceController:
             if category is None:
                 category = self.create_category(email, category_name)
             return {"id": category.id}
+        raise ExceptionError("Categoria não encontrada")
 
     def validate_amount(self, amount: float) -> Optional[int]:
+        "Verifica se o número é positivo"
         if amount <= 0:
             return False
+        return True
 
     def verify_category_by_name(self, category_name):
+        "Verifica se a categoria existe no banco"
         with self._get_session() as session:
             category = session.query(Categories).filter_by(name=category_name).first()
             if category is not None:
@@ -84,23 +94,20 @@ class FinanceController:
 
     def add_expense_to_db(
         self, user_id: int, category_id: int, amount: float, date: datetime
-    ) -> Optional[bool]:
+    ) -> bool:
+        "Adiciona gastos do usuário no banco"
         try:
-            with self._get_session() as session:
-                new_expense = Expenses(
-                    amount=amount, user_id=user_id, category_id=category_id, date=date
-                )
-                session.add(new_expense)
-                session.commit()
-                return True
-        except Exception:
-            session.rollback()
-            return False
+            new_expense = Expenses(
+                amount=amount, user_id=user_id, category_id=category_id, date=date
+            )
+            DatabaseManager().session_insert_data(new_expense)
+            return True
+        except ExceptionError as e:
+            self._get_session().rollback()
+            raise ExceptionError(f"Ocorreu um erro ao adicionar o gasto: {e}")
 
-    def add_user_balance(
-        self, email: str, amount: float, category_name: str
-    ) -> Tuple[Response, int]:
-        """"""
+    def add_user_balance(self, email: str, amount: float, category_name: str) -> bool:
+        "Adiciona gastos do usuário"
         date = datetime.now().astimezone(timezone("America/Sao_Paulo"))
         self.validate_amount(amount)
         user = self._get_user_id_by_email(email)
@@ -108,17 +115,16 @@ class FinanceController:
         category = self.get_category_id_by_name(email, category_name)
         category_id = category["id"]
         self.add_expense_to_db(user_id, category_id, amount, date)
+        return True
 
-        return jsonify({"msg": "Despesa adicionada com sucesso"}), 201
-
-    def get_user_balance(self, email: str) -> Optional[int]:
+    def get_user_balance(self, email: str) -> int:
         "Obtém o saldo do usuário"
         user = self._get_user_id_by_email(email)
         user_id = user["id"]
         total_amount = self.get_total_amount_expenses(user_id)
         return total_amount
 
-    def get_balance_by_date(self, email: str, date: str) -> Optional[int]:
+    def get_balance_by_date(self, email: str, date: str) -> int:
         "Obtém o saldo do usuário pela data"
         year, month = self._verify_date(date)
         user = self._get_user_id_by_email(email)
@@ -208,6 +214,7 @@ class FinanceController:
         return loan_list
 
     def get_categories(self, email: str) -> list:
+        "Lista todas as categorias de um usuário"
         user = self._get_user_id_by_email(email)
         user_id = user["id"]
         categories = self.session.query(Categories).filter_by(user_id=user_id).all()
