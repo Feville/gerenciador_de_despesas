@@ -29,8 +29,8 @@ def register():
     password = data.get("password")
     response = access_controller.create_user(username, email, password)
     if response:
-        return jsonify({"msg": "Usuário registrado"}), 201
-    return jsonify({"msg": "Problema ao regitsrar usuário"}), 400
+        return jsonify({"msg": "Problema ao registrar usuário"}), 400
+    return jsonify({"msg": "Usuário registrado"}), 201
 
 
 @access_blueprint.route("/login", methods=["POST"])

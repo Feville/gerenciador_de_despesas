@@ -5,11 +5,17 @@ Rotas de finanças do usuário
 from flask import Blueprint, request, jsonify
 from core.logs.logger import setup_logger
 from core.services.controllers.finance import FinanceController
+from api.routes.models.exceptions.finance import ExceptionError
 
 logger = setup_logger(__name__)
-finance_blueprint = Blueprint("finance", __name__)
+finance_blueprint = Blueprint("finance", __name__, url_prefix="/api/v1")
 
 finance_controller = FinanceController()
+
+
+@finance_blueprint.errorhandler(ExceptionError)
+def errorHandler(e):
+    return jsonify({"error": str(e)}), 400
 
 
 @finance_blueprint.route("/get_balance/<email>", methods=["GET"])
@@ -86,11 +92,11 @@ def add_loan():
 def get_loan_history(email: str):
     logger.info("Rota que mostra o histórico de empréstimos")
     response = finance_controller.get_loan_history(email)
-    return jsonify(response)
+    return jsonify({"msg": response}), 200
 
 
 @finance_blueprint.route("/get_categories/<email>", methods=["GET"])
 def get_history(email: str):
     logger.info("Rota que mostra todas as categorias")
     response = finance_controller.get_categories(email)
-    return jsonify(response)
+    return jsonify({"msg": response}), 200

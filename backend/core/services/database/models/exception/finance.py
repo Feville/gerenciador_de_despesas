@@ -1,3 +1,5 @@
+""" Módulo que representa as categorias de despesas"""
+
 from flask import jsonify
 
 

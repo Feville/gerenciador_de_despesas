@@ -1,3 +1,5 @@
+""" Módulo que representa as categorias de despesas"""
+
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from core.services.database.models.base import Base
