@@ -23,7 +23,7 @@ def get_balance(email: str):
     logger.info("Rota que mostra o saldo do usuário")
     response = finance_controller.get_user_balance(email)
     if response:
-        return jsonify({"msg": response}), 200
+        return jsonify({"total_amount": response}), 200
     return jsonify({"msg": response}), 400
 
 

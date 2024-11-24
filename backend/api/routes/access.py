@@ -22,7 +22,7 @@ def alive():
 def register():
     logger.info("Rota que cadastra usuário")
     data = request.json
-    if data is None:
+    if not data:
         return {"error": "Dados JSON não fornecidos"}, 400
     username = data.get("username")
     email = data.get("email")
@@ -37,7 +37,7 @@ def register():
 def login():
     logger.info("Rota que faz o login dos usuários")
     data = request.json
-    if data is None:
+    if not data:
         return {"error": "Dados JSON não fornecidos"}, 400
     email = data.get("email")
     password = data.get("password")
